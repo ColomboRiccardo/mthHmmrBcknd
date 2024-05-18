@@ -18,7 +18,9 @@ const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
 const fetchAllWeapons = () => __awaiter(void 0, void 0, void 0, function* () {
     let { data: warhammer_40k_weapons, error } = yield supabase
         .from("mathHammer_weapon_datasheet")
-        .select("*");
+        .select("*")
+        //.gt("id", 1005);
+        .lt("id", 100);
     //.range(0, 9);
     return warhammer_40k_weapons;
 });

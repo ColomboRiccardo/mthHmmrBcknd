@@ -1,2 +1,26 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Logs
+logs
+*.log
+
+# Environment variables
 .env
-node_modules
+
+# Compiled files
+dist/
+
+# Docker
+# Ignore Docker-related files that are generated, not the Dockerfile itself
+docker-compose.override.yml
+
+# Miscellaneous
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+*.iml

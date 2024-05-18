@@ -2,7 +2,7 @@ import { throwDice, multipleThrows, checkDiceCorrectness } from "./diceThrow";
 import {
   checkArrayForGreaterOrEqualThan,
   dSixGreaterThanProbability,
-} from "./checkingFunctions";
+} from "./helperFunctions";
 
 const numberOfTries = 100;
 

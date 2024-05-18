@@ -15,6 +15,7 @@ const dSixGreaterThanProbability = (diceValue) => {
 };
 exports.dSixGreaterThanProbability = dSixGreaterThanProbability;
 const convertStringToArr = (myString) => {
+    console.log(myString);
     return JSON.parse(myString.replace('"', ""));
 };
 exports.convertStringToArr = convertStringToArr;
