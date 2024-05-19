@@ -3,13 +3,10 @@ import {
   dSixGreaterThanProbability,
   roundingFunction,
 } from "./helperFunctions";
-import { fetchAllWeapons } from "./databaseCalls";
+import { fetchAllFromWeaponsTable } from "./databaseCalls";
 import { practicalWeaponSkillCheck } from "./weaponsProbability";
 
-const apicall = async () => {
-  //const weaponsList = await fetchAllWeapons();
-  console.log("hello there");
-};
+const apicall = async () => {};
 
 apicall();
 

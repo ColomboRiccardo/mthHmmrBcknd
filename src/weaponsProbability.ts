@@ -1,7 +1,11 @@
-import { throwDice, multipleThrows, checkDiceCorrectness } from "./diceThrow";
+//TODO this is for the practical throws, we'll have that later
+
 import {
   checkArrayForGreaterOrEqualThan,
   dSixGreaterThanProbability,
+  throwDice,
+  multipleThrows,
+  checkDiceCorrectness,
 } from "./helperFunctions";
 
 const numberOfTries = 100;

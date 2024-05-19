@@ -1,48 +1,79 @@
 //here we are going to put the code that gets an array of weapons, simulates the attacks and returns an array of objects of attacks with the corresponding weapon_id
 
+import { Weapon, WeaponsKeywords } from "./types";
 import {
   convertStringToArr,
   dSixGreaterThanProbability,
   roundingFunction,
 } from "./helperFunctions";
 
-type Weapon = {
+interface AttacksLanded {
+  [index: string]: number[];
+}
+
+interface AttacksObject {
   id: number;
-  datasheet_id: number;
-  weapon_name: string;
-  weapon_keywords: string;
-  weapon_range: number;
-  weapon_type: string;
-  weapon_attack: string;
-  weapon_strength: string;
-  weapon_armor_penetration: number;
-  weapon_damage: string;
-  weapon_skill: number;
-};
+  theoretical_atks_landed: AttacksLanded;
+}
 
-const simulateAllWeapons = (weaponList: Weapon[]) => {
-  const weaponTheoreticalHits = weaponList.map((weapon) =>
-    simulateWeaponHits(weapon)
-  );
-};
+//given a weaponlist this function can simulate the whole firing phase
+export const simulateAllWeapons = (weaponList: Weapon[]) => {
+  let attacksObjectArray: AttacksObject[];
 
-const simulateWeaponHits = (weapon: Weapon) => {
-  const theoreticalAttacksLanded: number[] = [];
-  convertStringToArr(weapon.weapon_attack).forEach((attack: number) => {
-    theoreticalAttacksLanded.push(
-      roundingFunction(attack * dSixGreaterThanProbability(weapon.weapon_skill))
-    );
+  weaponList.forEach((weapon) => {
+    let theoretical_atks_landed = theoreticalWeaponHits(weapon);
+    let attacksObject: AttacksObject = {
+      id: weapon.id,
+      theoretical_atks_landed,
+    };
+    attacksObjectArray.push(attacksObject);
   });
-  const attacksObject = {
-    id: weapon.id,
-    weapon_theoretical_attacks_landed: theoreticalAttacksLanded,
-  };
-  return attacksObject;
-  //   attacksObjectArray?.forEach((weapon) => {
-  //     apiUpdateColById(
-  //       weapon.id,
-  //       "weapon_theoretical_attacks_landed",
-  //       weapon.weapon_theoretical_attacks_landed
-  //     );
-  //   });
 };
+
+//this function takes a weapon as an argument and calculates an object with various arrays of hits
+const theoreticalWeaponHits = ({
+  weapon_skill: skills,
+  weapon_attack: attacks,
+  weapon_keywords: keywords,
+}: Weapon) => {
+  const weaponAttacksArray = convertStringToArr(attacks);
+  const weaponKeywordsArray: WeaponsKeywords[] = convertStringToArr(keywords);
+
+  const attacksLanded: AttacksLanded = {};
+
+  weaponAttacksArray.forEach((attack: number) => {
+    attacksLanded["base attacks"].push(
+      attack * dSixGreaterThanProbability(skills)
+    );
+
+    if (weaponKeywordsArray.includes("sustained hits 1")) {
+      attacksLanded["sustained hits 1"].push(
+        attack * dSixGreaterThanProbability(skills) + 1 / 6
+      );
+    }
+
+    if (weaponKeywordsArray.includes("heavy")) {
+      let movedSkills = skills - 1;
+      attacksLanded["moved"].push(
+        attack * dSixGreaterThanProbability(movedSkills)
+      );
+    }
+
+    if (
+      weaponKeywordsArray.includes("sustained hits 1") &&
+      weaponKeywordsArray.includes("heavy")
+    ) {
+      let movedSkills = skills - 1;
+      attacksLanded["sustained hits 1, moved"].push(
+        attack * dSixGreaterThanProbability(movedSkills)
+      );
+    }
+  });
+
+  return attacksLanded;
+};
+
+const theoreticalWeaponsWound = (
+  { weapon_keywords: keywords, weapon_strength: strength }: Weapon,
+  theoreticalWeaponHits: AttacksLanded
+) => {};
