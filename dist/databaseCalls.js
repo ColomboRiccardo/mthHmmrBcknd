@@ -8,36 +8,87 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var _a, _b;
+var _a, _b, _c, _d;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.apiUpdateColById = exports.apiUpsertTable = exports.fetchAllWeapons = void 0;
+exports.updateWeaponSimulationTableColumnById = exports.fetchAllFromWeaponsTable = exports.apiUpsertTable = exports.updateWeaponWoundSimulationColById = exports.updateWeaponHitSimulationColById = void 0;
 const supabase_js_1 = require("@supabase/supabase-js");
-const supabaseUrl = (_a = process.env.REACT_APP_SUPABASE_URL) !== null && _a !== void 0 ? _a : "";
-const supabaseKey = (_b = process.env.REACT_APP_SUPABASE_KEY) !== null && _b !== void 0 ? _b : "";
+const WEAPON_SIMULATION_TABLE = (_a = process.env.WEAPON_SIMULATION_TABLE) !== null && _a !== void 0 ? _a : "";
+const WEAPON_HIT_SIMULATION_TABLE = "mathHammer_weapon_hit_simulation";
+const WEAPON_WOUND_SIMULATION_TABLE = "mathHammer_weapon_wounds_simulation";
+const WEAPON_DATASHEET_TABLE = (_b = process.env.WEAPON_DATASHEET_TABLE) !== null && _b !== void 0 ? _b : "";
+const supabaseUrl = (_c = process.env.REACT_APP_SUPABASE_URL) !== null && _c !== void 0 ? _c : "";
+const supabaseKey = (_d = process.env.REACT_APP_SUPABASE_KEY) !== null && _d !== void 0 ? _d : "";
 const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
-const fetchAllWeapons = () => __awaiter(void 0, void 0, void 0, function* () {
-    let { data: warhammer_40k_weapons, error } = yield supabase
-        .from("mathHammer_weapon_datasheet")
-        .select("*")
-        //.gt("id", 1005);
-        .lt("id", 100);
-    //.range(0, 9);
-    return warhammer_40k_weapons;
+const fetchAllFromTable = (table) => {
+    return () => __awaiter(void 0, void 0, void 0, function* () {
+        let { data, error } = yield supabase
+            .from(table)
+            .select("*")
+            //.gt("id", 1005);
+            .lt("id", 300);
+        //.range(0, 1500);
+        //.range(0, 9);
+        if (data == null) {
+            throw new Error("no data");
+        }
+        return data;
+    });
+};
+const updateWeaponHitSimulationColById = (id, mode, name, attacksLanded) => __awaiter(void 0, void 0, void 0, function* () {
+    const { data, error } = yield supabase
+        .from(WEAPON_HIT_SIMULATION_TABLE)
+        .insert([
+        {
+            weapon_id: id,
+            weapon_name: name,
+            weapon_theor_hits: attacksLanded,
+            weapon_mode: mode,
+        },
+    ])
+        .select();
+    console.log(data, error);
 });
-exports.fetchAllWeapons = fetchAllWeapons;
+exports.updateWeaponHitSimulationColById = updateWeaponHitSimulationColById;
+const updateWeaponWoundSimulationColById = (id, mode, name, strength, hit, wounds) => __awaiter(void 0, void 0, void 0, function* () {
+    const { data, error } = yield supabase
+        .from(WEAPON_WOUND_SIMULATION_TABLE)
+        .insert([
+        {
+            weapon_id: id,
+            weapon_name: name,
+            weapon_mode: mode,
+            weapon_strength: strength,
+            weapon_hit: hit,
+            weapon_wounds: wounds,
+        },
+    ])
+        .select();
+    console.log(data, error);
+});
+exports.updateWeaponWoundSimulationColById = updateWeaponWoundSimulationColById;
+const updateWhichTableColumnById = (table) => {
+    return (id, columnName, value) => __awaiter(void 0, void 0, void 0, function* () {
+        const { data, error } = yield supabase
+            .from(table)
+            .update({ [columnName]: value })
+            .eq("id", id)
+            .select();
+        console.log(data, error);
+    });
+};
 const apiUpsertTable = () => __awaiter(void 0, void 0, void 0, function* () {
     const { data, error } = yield supabase
-        .from("mathHammer_weapon_datasheet")
+        .from(WEAPON_DATASHEET_TABLE)
         .upsert({ some_column: "someValue" })
         .select();
 });
 exports.apiUpsertTable = apiUpsertTable;
-const apiUpdateColById = (id, columnName, value) => __awaiter(void 0, void 0, void 0, function* () {
-    const { data, error } = yield supabase
-        .from("mathHammer_weapon_datasheet")
-        .update({ [columnName]: value })
-        .eq("id", id)
-        .select();
-    console.log(data, error);
-});
-exports.apiUpdateColById = apiUpdateColById;
+//   attacksObjectArray?.forEach((weapon) => {
+//     apiUpdateColById(
+//       weapon.id,
+//       "weapon_theoretical_attacks_landed",
+//       weapon.weapon_theoretical_attacks_landed
+//     );
+//   });
+exports.fetchAllFromWeaponsTable = fetchAllFromTable(WEAPON_DATASHEET_TABLE);
+exports.updateWeaponSimulationTableColumnById = updateWhichTableColumnById(WEAPON_SIMULATION_TABLE);

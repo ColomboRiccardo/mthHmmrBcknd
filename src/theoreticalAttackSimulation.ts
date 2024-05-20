@@ -1,6 +1,11 @@
 //here we are going to put the code that gets an array of weapons, simulates the attacks and returns an array of objects of attacks with the corresponding weapon_id
 
-import { StrengthValues, Weapon, WeaponsKeywords } from "./types";
+import {
+  StrengthValues,
+  ToughnessValues,
+  Weapon,
+  WeaponsKeywords,
+} from "./types";
 import {
   convertStringToArr,
   convertStringToNumber,
@@ -12,11 +17,17 @@ import {
 interface AttacksLanded {
   id: number;
   mode: string;
+  name: string;
   attacksLanded: number[];
 }
 
-interface WoundingAttacks {
-  [index: string]: number[];
+export interface WoundsPassed {
+  id: number;
+  mode: string;
+  name: string;
+  strength: number;
+  hit: number;
+  wounds: number[];
 }
 
 interface AttacksObject {
@@ -25,14 +36,15 @@ interface AttacksObject {
 }
 
 //given a weaponlist this function can simulate the whole firing phase
-export const simulateAllWeapons = (weaponList: Weapon[]) => {
-  let attackHitsTable: AttacksLanded[] = [];
+export const simulateWeaponHits = (weaponList: Weapon[]) => {
+  let attackHitsTable: AttacksLanded[] = weaponList.reduce((acc, weapon) => {
+    let hits = theoreticalWeaponHits(weapon);
+    return acc.concat(hits);
+  }, [] as AttacksLanded[]);
 
-  weaponList.forEach((weapon) => {
-    attackHitsTable.concat(theoreticalWeaponHits(weapon));
-  });
+  //console.log(attackHitsTable);
 
-  console.log(attackHitsTable);
+  return attackHitsTable;
 };
 
 //this function takes a weapon as an argument and calculates an object with various arrays of hits
@@ -111,23 +123,55 @@ const theoreticalWeaponHits = ({
   return attacksLandedArray;
 };
 
-//const theoreticalWeaponsWound = (
-//   { weapon_keywords: keywords, weapon_strength: strength }: Weapon,
-//   theoreticalWeaponHits: AttacksLanded
-// ) => {
-//   const weaponModes = Object.keys(theoreticalWeaponHits);
-//   const weaponHits = Object.values(theoreticalWeaponHits);
+//given a weaponlist this function can simulate the whole firing phase
+export const simulateWeaponWounds = (
+  weaponList: Weapon[],
+  weaponHits: AttacksLanded[]
+) => {
+  const toughnessArray = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  let attackWoundsTable = weaponHits.reduce((acc, weaponProfile) => {
+    let weaponCharacteristics = weaponList.find(
+      (weapon) => weapon.id == weaponProfile.id
+    );
+    let wounds = theoreticalWeaponWounds(
+      weaponCharacteristics as Weapon,
+      weaponProfile,
+      toughnessArray
+    );
+    return acc.concat(wounds);
+  }, [] as WoundsPassed[]);
 
-//   const woundingAttacks: WoundingAttacks = {};
+  return attackWoundsTable;
+};
 
-//   for (let i = 0; i < weaponModes.length; i++) {
-//     woundingAttacks[weaponModes[i]] = weaponHits[i].map(
-//       (hits) =>
-//         hits *
-//         strengthVsToughnessProbability(
-//           convertStringToNumber(strength) as StrengthValues,
-//           4
-//         )
-//     );
-//   }
-// };
+//here we want to iterate through elements of weponList one by one and create an array of objects with arrays of wounds per mode of firing. then we concatenate them and we send them
+//watch out though, every row is going to be 1 value of toughness, 1 value of mode. potentially, we have 12 toughnesses * 3 modes * 16 hits = a shitton per weapon
+const theoreticalWeaponWounds = (
+  { weapon_keywords: keywords, weapon_strength: strength }: Weapon,
+  { id, mode, name, attacksLanded }: AttacksLanded,
+  toughnessArray: number[]
+) => {
+  const theoreticalWeaponWounds: WoundsPassed[] = [];
+
+  attacksLanded.forEach((hit) => {
+    const woundingAttacksObject = {
+      id,
+      mode,
+      name,
+      strength: convertStringToArr(strength),
+      hit,
+      wounds: toughnessArray.map((toughness) => {
+        return roundingFunction(
+          hit *
+            strengthVsToughnessProbability(
+              convertStringToArr(strength)[0] as StrengthValues,
+              toughness as ToughnessValues
+            )
+        );
+      }),
+    };
+    theoreticalWeaponWounds.push(woundingAttacksObject);
+  });
+
+  return theoreticalWeaponWounds;
+};

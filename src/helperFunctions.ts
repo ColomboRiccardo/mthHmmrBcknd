@@ -14,7 +14,7 @@ export const checkArrayForGreaterOrEqualThan = (
 
 export const convertStringToArr = (myString: string) => {
   //console.log(myString);
-  return JSON.parse(myString.replace('"', ""));
+  return JSON.parse(myString.replace('"[', "[").replace(']"', "]"));
 };
 
 export const convertStringToNumber = (myString: string): number => {

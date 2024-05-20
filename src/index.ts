@@ -3,14 +3,31 @@ import {
   dSixGreaterThanProbability,
   roundingFunction,
 } from "./helperFunctions";
-import { fetchAllFromWeaponsTable } from "./databaseCalls";
+import {
+  fetchAllFromWeaponsTable,
+  updateWeaponHitSimulationColById,
+  updateWeaponWoundSimulationColById,
+} from "./databaseCalls";
 import { practicalWeaponSkillCheck } from "./weaponsProbability";
-import { simulateAllWeapons } from "./theoreticalAttackSimulation";
+import {
+  simulateWeaponHits,
+  simulateWeaponWounds,
+} from "./theoreticalAttackSimulation";
 import { Weapon } from "./types";
 
 const apicall = async () => {
   const weaponList: Weapon[] = await fetchAllFromWeaponsTable();
-  simulateAllWeapons(weaponList);
+  const attackHitsTable = simulateWeaponHits(weaponList);
+
+  attackHitsTable.forEach(({ id, mode, name, attacksLanded }) => {
+    updateWeaponHitSimulationColById(id, mode, name, attacksLanded);
+  });
+
+  const attackWoundsTable = simulateWeaponWounds(weaponList, attackHitsTable);
+
+  attackWoundsTable.forEach(({ id, mode, name, strength, hit, wounds }) => {
+    updateWeaponWoundSimulationColById(id, mode, name, strength, hit, wounds);
+  });
 };
 
 apicall();

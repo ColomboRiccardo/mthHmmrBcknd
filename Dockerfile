@@ -86,3 +86,5 @@ ENV NODE_ENV=production
 
 # Run the application
 CMD [ "node", "--env-file=.env", "dist/index.js" ]
+
+#! to build, docker build -t name-of-the-app .
