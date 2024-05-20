@@ -1,4 +1,4 @@
-import { DiceValues } from "./types";
+import { DiceValues, StrengthValues, ToughnessValues } from "./types";
 
 export const checkArrayForGreaterOrEqualThan = (
   value: number,
@@ -13,8 +13,12 @@ export const checkArrayForGreaterOrEqualThan = (
 };
 
 export const convertStringToArr = (myString: string) => {
-  console.log(myString);
+  //console.log(myString);
   return JSON.parse(myString.replace('"', ""));
+};
+
+export const convertStringToNumber = (myString: string): number => {
+  return Number(myString.replace('"[', "").replace(']"', ""));
 };
 
 export const roundingFunction = (value: number) => {
@@ -76,3 +80,23 @@ export const checkDiceCorrectness = () => {
 
 //console.log(multipleThrows(60));
 //console.log(checkDiceCorrectness());
+
+export const strengthVsToughnessProbability = (
+  strength: StrengthValues,
+  toughness: ToughnessValues
+): number => {
+  const ratio = strength / toughness;
+  if (ratio >= 2) {
+    return 5 / 6;
+  } else if (ratio < 2 && ratio > 1) {
+    return 4 / 6;
+  } else if (ratio == 1) {
+    return 3 / 6;
+  } else if (ratio < 1 && ratio > 0.5) {
+    return 2 / 6;
+  } else if (ratio <= 0.5) {
+    return 1 / 6;
+  } else {
+    return 0;
+  }
+};

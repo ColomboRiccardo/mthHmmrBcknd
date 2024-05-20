@@ -5,8 +5,13 @@ import {
 } from "./helperFunctions";
 import { fetchAllFromWeaponsTable } from "./databaseCalls";
 import { practicalWeaponSkillCheck } from "./weaponsProbability";
+import { simulateAllWeapons } from "./theoreticalAttackSimulation";
+import { Weapon } from "./types";
 
-const apicall = async () => {};
+const apicall = async () => {
+  const weaponList: Weapon[] = await fetchAllFromWeaponsTable();
+  simulateAllWeapons(weaponList);
+};
 
 apicall();
 

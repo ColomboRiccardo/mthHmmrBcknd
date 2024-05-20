@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { Weapon } from "./types";
 
 const WEAPON_SIMULATION_TABLE = process.env.WEAPON_SIMULATION_TABLE ?? "";
 const WEAPON_DATASHEET_TABLE = process.env.WEAPON_DATASHEET_TABLE ?? "";
@@ -9,13 +10,16 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_KEY ?? "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const fetchAllFromTable = (table: string) => {
-  return async () => {
+  return async (): Promise<Weapon[]> => {
     let { data, error } = await supabase
       .from(table)
       .select("*")
       //.gt("id", 1005);
       //.lt("id", 100);
       .range(0, 9);
+    if (data == null) {
+      throw new Error("no data");
+    }
     return data;
   };
 };

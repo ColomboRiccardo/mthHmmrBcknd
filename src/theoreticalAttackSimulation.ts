@@ -1,13 +1,21 @@
 //here we are going to put the code that gets an array of weapons, simulates the attacks and returns an array of objects of attacks with the corresponding weapon_id
 
-import { Weapon, WeaponsKeywords } from "./types";
+import { StrengthValues, Weapon, WeaponsKeywords } from "./types";
 import {
   convertStringToArr,
+  convertStringToNumber,
   dSixGreaterThanProbability,
   roundingFunction,
+  strengthVsToughnessProbability,
 } from "./helperFunctions";
 
 interface AttacksLanded {
+  id: number;
+  mode: string;
+  attacksLanded: number[];
+}
+
+interface WoundingAttacks {
   [index: string]: number[];
 }
 
@@ -18,62 +26,108 @@ interface AttacksObject {
 
 //given a weaponlist this function can simulate the whole firing phase
 export const simulateAllWeapons = (weaponList: Weapon[]) => {
-  let attacksObjectArray: AttacksObject[];
+  let attackHitsTable: AttacksLanded[] = [];
 
   weaponList.forEach((weapon) => {
-    let theoretical_atks_landed = theoreticalWeaponHits(weapon);
-    let attacksObject: AttacksObject = {
-      id: weapon.id,
-      theoretical_atks_landed,
-    };
-    attacksObjectArray.push(attacksObject);
+    attackHitsTable.concat(theoreticalWeaponHits(weapon));
   });
+
+  console.log(attackHitsTable);
 };
 
 //this function takes a weapon as an argument and calculates an object with various arrays of hits
 const theoreticalWeaponHits = ({
+  id,
+  weapon_name: name,
   weapon_skill: skills,
   weapon_attack: attacks,
   weapon_keywords: keywords,
-}: Weapon) => {
+}: Weapon): AttacksLanded[] => {
   const weaponAttacksArray = convertStringToArr(attacks);
   const weaponKeywordsArray: WeaponsKeywords[] = convertStringToArr(keywords);
 
-  const attacksLanded: AttacksLanded = {};
+  const attacksLandedArray: AttacksLanded[] = [];
 
-  weaponAttacksArray.forEach((attack: number) => {
-    attacksLanded["base attacks"].push(
-      attack * dSixGreaterThanProbability(skills)
+  let weaponId = id;
+  let mode = "base attacks";
+  let attacksLanded = weaponAttacksArray.map((attack: number) =>
+    roundingFunction(attack * dSixGreaterThanProbability(skills))
+  );
+  const baseAttackMode = {
+    id: weaponId,
+    name,
+    mode,
+    attacksLanded,
+  };
+  attacksLandedArray.push(baseAttackMode);
+
+  if (weaponKeywordsArray.includes("sustained hits 1")) {
+    let mode = "sustained hits 1";
+    let attacksLanded = weaponAttacksArray.map((attack: number) =>
+      roundingFunction(attack * dSixGreaterThanProbability(skills) + 1 / 6)
     );
+    const sustainedAttackMode = {
+      id: weaponId,
+      name,
+      mode,
+      attacksLanded,
+    };
+    attacksLandedArray.push(sustainedAttackMode);
+  }
 
-    if (weaponKeywordsArray.includes("sustained hits 1")) {
-      attacksLanded["sustained hits 1"].push(
-        attack * dSixGreaterThanProbability(skills) + 1 / 6
-      );
-    }
+  if (weaponKeywordsArray.includes("heavy")) {
+    let movedSkills = skills - 1;
+    let mode = "heavy, moved";
+    let attacksLanded = weaponAttacksArray.map((attack: number) =>
+      roundingFunction(attack * dSixGreaterThanProbability(movedSkills))
+    );
+    const heavyAttackMode = {
+      id: weaponId,
+      name,
+      mode,
+      attacksLanded,
+    };
+    attacksLandedArray.push(heavyAttackMode);
+  }
 
-    if (weaponKeywordsArray.includes("heavy")) {
-      let movedSkills = skills - 1;
-      attacksLanded["moved"].push(
-        attack * dSixGreaterThanProbability(movedSkills)
-      );
-    }
+  if (
+    weaponKeywordsArray.includes("sustained hits 1") &&
+    weaponKeywordsArray.includes("heavy")
+  ) {
+    let movedSkills = skills - 1;
+    let mode = "heavy, moved && sustained hits 1";
+    let attacksLanded = weaponAttacksArray.map((attack: number) =>
+      roundingFunction(attack * dSixGreaterThanProbability(movedSkills) + 1 / 6)
+    );
+    const heavySustainedAttackMode = {
+      id: weaponId,
+      name,
+      mode,
+      attacksLanded,
+    };
+    attacksLandedArray.push(heavySustainedAttackMode);
+  }
 
-    if (
-      weaponKeywordsArray.includes("sustained hits 1") &&
-      weaponKeywordsArray.includes("heavy")
-    ) {
-      let movedSkills = skills - 1;
-      attacksLanded["sustained hits 1, moved"].push(
-        attack * dSixGreaterThanProbability(movedSkills)
-      );
-    }
-  });
-
-  return attacksLanded;
+  return attacksLandedArray;
 };
 
-const theoreticalWeaponsWound = (
-  { weapon_keywords: keywords, weapon_strength: strength }: Weapon,
-  theoreticalWeaponHits: AttacksLanded
-) => {};
+//const theoreticalWeaponsWound = (
+//   { weapon_keywords: keywords, weapon_strength: strength }: Weapon,
+//   theoreticalWeaponHits: AttacksLanded
+// ) => {
+//   const weaponModes = Object.keys(theoreticalWeaponHits);
+//   const weaponHits = Object.values(theoreticalWeaponHits);
+
+//   const woundingAttacks: WoundingAttacks = {};
+
+//   for (let i = 0; i < weaponModes.length; i++) {
+//     woundingAttacks[weaponModes[i]] = weaponHits[i].map(
+//       (hits) =>
+//         hits *
+//         strengthVsToughnessProbability(
+//           convertStringToNumber(strength) as StrengthValues,
+//           4
+//         )
+//     );
+//   }
+// };
